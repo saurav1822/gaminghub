@@ -1,0 +1,511 @@
+import mysql.connector as ct
+import math
+import random
+
+playerName = str(input('☁ ▅▒░☼‿☼░▒▅ ☁: Welcome! what is your name?')) # asking the player for his name, so it can be added to the leaderboard if it hasnt been already
+sqlUser = "root" 
+sqlPassword = "Aswathy1234#"
+
+"""HANGMAN DAVID JIJO"""
+"""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"""
+
+
+def hangman():
+	wordList = ['abruptly', 'absurd', 'abyss', 'affix', 'askew', 'avenue', 'awkward', 'axiom', 'azure',
+	 'bagpipes', 'bandwagon', 'banjo', 'bayou', 'beekeeper', 'bikini', 'blitz', 'blizzard', 'boggle', 'bookworm', 'boxcar', 'boxful', 'buckaroo', 'buffalo', 'buffoon', 'buxom', 'buzzard', 'buzzing', 'buzzwords',
+	 'caliph', 'cobweb', 'cockiness', 'croquet', 'crypt', 'curacao', 'cycle', 'daiquiri', 'dirndl', 'disavow', 'dizzying', 'duplex', 'dwarves', 'embezzle', 'equip', 'espionage', 'euouae', 'exodus', 'faking', 'fishhook',
+	 'fixable', 'fjord', 'flapjack', 'flopping', 'fluffiness', 'flyby', 'foxglove', 'frazzled', 'frizzled', 'fuchsia', 'funny', 'gabby', 'galaxy', 'galvanize', 'gazebo', 'giaour', 'gizmo', 'glowworm', 'glyph', 'gnarly', 'gnostic',
+	 'gossip', 'grogginess', 'haiku', 'haphazard', 'hyphen', 'iatrogenic', 'icebox', 'injury', 'ivory', 'ivy', 'jackpot', 'jaundice', 'jawbreaker', 'jaywalk', 'jazziest', 'jazzy', 'jelly', 'jigsaw', 'jinx', 'jiujitsu', 'jockey',
+	 'jogging', 'joking', 'jovial', 'joyful', 'juicy', 'jukebox', 'jumbo', 'kayak', 'kazoo', 'keyhole', 'khaki', 'kilobyte', 'kiosk', 'kitsch', 'kiwifruit', 'klutz', 'knapsack', 'larynx', 'lengths', 'lucky', 'luxury', 'lymph', 'marquis',
+	 'matrix', 'megahertz', 'microwave', 'mnemonic', 'mystify', 'naphtha', 'nightclub', 'nowadays', 'numbskull', 'nymph', 'onyx', 'ovary', 'oxidize', 'oxygen', 'pajama', 'peekaboo', 'phlegm', 'pixel', 'pizazz', 'pneumonia', 'polka', 'pshaw',
+	 'psyche', 'puppy', 'puzzling', 'quartz', 'queue', 'quips', 'quixotic', 'quiz', 'quizzes', 'quorum', 'razzmatazz', 'rhubarb', 'rhythm', 'rickshaw', 'schnapps', 'scratch', 'shiv', 'snazzy', 'sphinx', 'spritz', 'squawk', 'staff', 'strength', 
+	 'strengths', 'stretch', 'stronghold', 'stymied', 'subway', 'swivel', 'syndrome', 'thriftless', 'thumbscrew', 'topaz', 'transcript', 'transgress', 'transplant', 'triphthong', 'twelfth', 'twelfths', 'unknown', 'unworthy', 'unzip', 'uptown', 
+	 'vaporize', 'vixen', 'vodka', 'voodoo', 'vortex', 'voyeurism', 'walkway', 'waltz', 'wave', 'wavy', 'waxy', 'wellspring', 'wheezy', 'whiskey', 'whizzing', 'whomever', 'wimpy', 'witchcraft', 'wizard', 'woozy', 'wristwatch', 'wyvern', 'xylophone', 
+	 'yachtsman', 'yippee', 'yoked', 'youthful', 'yummy', 'zephyr', 'zigzag', 'zigzagging', 'zilch', 'zipper', 'zodiac', 'zombie'] 
+	 # list of all the words that the computer might give to the player
+
+	stage = 0 # stage variable represents which "stage" the game is at, 
+	# meaning what drawing of hangman the game is at, an empty hangman being stage(0), a completely drawn hangman being stage(5), stage(6) being defeat, and a special stage(7) being victory. 
+	
+	wordTaken = False # a boolean that checks if a word is in play or not
+	
+	word = "" # the word to be guessed by the user
+	
+	dashedWord = [] # the dashes and letters that make up the pieces of the word guessed by the user, in a list, initially starts off as  only dashes i.e ----
+
+	while gameStage(stage) != "end" or gameStage(stage) != "victory": # while there is no loser or winner
+		
+		if wordTaken: # if a word has been taken by the computer, then the round begins
+			
+
+			# printing the details for every round
+			print(gameStage(stage))
+			print("".join(dashedWord))
+
+			letterGuess = input("guess a letter of the word: ")
+
+			if letterGuess not in word or letterGuess in dashedWord: # if guess is wrong or letter has been guessed
+				stage += 1
+			else:
+				print("you guessed correct")
+				for i in range(0, len(word)):
+					if word[i] == letterGuess:
+						dashedWord[i] = letterGuess	
+
+			if "".join(dashedWord) == word: # checks if all the letters guessed by the user so far give us the word
+				stage = "victory"
+				addScore(True)
+				gameStage(stage)
+				break
+
+			if stage == 6: # checks if there have been enough failed tries to warrant a defeat
+				stage = "end"
+				gameStage(stage)
+				addScore(False)
+				break					  	
+		
+		if not wordTaken: # if no word has been taken, and the game is starting
+			
+			# to show that a new game is staritng, stage and dashed word is reset
+			stage = 0
+			dashedWord.clear()
+
+			# choosing a new word, removing used word, and creating blank string for user to guess word
+			wordIndex = random.randint(0, len(wordList))
+			word = wordList[wordIndex]
+			del wordList[wordIndex]
+
+			for i in word:
+				dashedWord.append("-")
+
+			wordTaken = True
+
+	print(gameStage(stage))
+
+
+def gameStage(stage): # a function to show the user which stage of the game they are in, and adds win or loss depending on the outcome
+	if stage == 0:
+		return """
+-------
+|     
+|    
+|    
+|    
+|
+|---------"""
+	if stage == 1:
+		return """
+-------
+|     O
+|    
+|    
+|    
+|
+|---------"""
+	if stage == 2:
+		return """
+-------
+|     O
+|     |
+|     |
+|    
+|
+|---------"""
+	if stage == 3:
+		return """
+-------
+|     O
+|    \|/
+|     |
+|    
+|
+|---------"""
+	if stage == 4:
+		return """
+-------
+|     O
+|    \|/
+|     |
+|    / \
+|
+|---------"""
+	if stage == 5:
+		return """
+▬▬▬▬▬▬▬▬▬▬
+|     |
+|     O
+|    /|\
+|     |
+|    | |
+|▬▬▬▬▬▬▬▬▬▬"""
+	if stage == "end":
+		return "You Lose, loser!"
+
+	if stage == "victory":
+		return "victory"
+
+
+"""STONE PAPER SCISSORS DIYA"""
+"""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"""
+
+compWins=playerWins=ties=0 # tracks the number of wins of comp, player, and number of ties
+
+
+#Function to determine whether it was a TIE or not. If not, who won.
+#This function also keeps track of the number of games won by user, computer and the number of TIE games
+def whoWon(playerMove,compMove): # these variables are used to represent the move mentioned by the player or computer, i.e rock, paper , scissors
+    global compWins,playerWins,ties
+  
+    if playerMove == compMove: # if the move is same
+        ties+=1
+        return('\nIts a TIE!!')
+    elif (playerMove == 'R' and compMove == 'S') or (playerMove =='P' and compMove =='R') or (playerMove == 'S' and compMove == 'P'): # if the move is favourable to player
+        
+        playerWins+=1
+        return("\nYou WON!! Congratulations!!")
+    
+    else: # if the move is favourable to the computer
+        
+        compWins += 1
+        return("\nYou LOST!! Better Luck Next Time!!")
+
+
+def stonepaperscissors():
+#Main
+	matchLength=int(input("How many matches would you like to play (in set of 3, 5 etc.)? "))
+	count = 0
+	
+	#Print Error if number of matches entered is even, since we need an odd number of matches to decide a winner
+	if matchLength%2 == 0: 
+	    
+	    print("Invalid Input!! Pls enter in set of odd numbers (3, 5 etc.)")
+	
+	else:
+	    
+	    winsNeeded = math.ceil(matchLength/2) # wins needed to win the entire round
+
+	    while (compWins < winsNeeded and playerWins < winsNeeded) or count <= matchLength : # while loop goes on until the number of matches has exceeded the limit and/or someone has won
+	   
+	        print('\nRock, Paper, Scissors -- Shoot!!')
+	        print('●▬▬▬▬๑۩۩๑▬▬▬▬▬●▬▬▬▬๑۩۩๑▬▬▬▬▬●▬▬▬▬๑۩۩๑▬▬▬▬▬●')
+	        userChoice = input('Enter R - Rock, P = Paper, S - Scissors:').upper()
+	        compChoice = random.choice(['R','P','S'])
+	        
+	        if userChoice in "RPS": # if statement that checks if the user's input is valid
+	            
+	            print("The Computer chose: ", compChoice)
+	            print(whoWon(userChoice,compChoice))
+	            count += 1
+	        
+	        else:
+	            
+	            print("Please enter a valid Input!!")
+	
+	    #Print Result of all the games   
+	    print("\nRESULT")
+	    print("●▬▬▬▬๑۩۩๑▬▬▬▬▬●▬▬▬▬๑۩۩๑▬▬▬▬▬●")
+	
+	    
+	    if compWins > playerWins: # compwin
+	        print("\nBEST Of {} Games WON by Computer".format(matchLength))
+	        addScore(False) # adds win to comp, loss to player
+	    
+	    elif playerWins > compWins: # playerwin
+	        print("\nYou WON the BEST OF {} Games!! CONGRATULATIONS!!".format(matchLength))
+	        addScore(True) # adds win to player, loss to comp
+
+	    elif playerWins == compWins: # makes it a draw
+	    	print("\nyou have drawn the match") # adds a draw to both players
+	    	addScore(None)
+	        
+	    #Print summary of the matches won by User, Computer and the TIE matches
+	    print("\nSUMMARY")
+	    print("●▬▬▬▬๑۩۩๑▬▬▬▬▬●▬▬▬▬๑۩۩๑▬▬▬▬▬●")
+	    print("The number of games won by You: ", playerWins)
+	    print("The number of games won by Computer: ", compWins)
+	    print("The number of games that were a TIE: ", ties)
+	
+
+"""ATLAS AMRITHA GINIL"""
+"""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"""
+
+def atlas():
+    #start
+
+	A=['aleppey','ambalapuzha','alinchodu','afghanistan','ahmedabad','anamudi','antarctica','aluva','addis ababa','australia','asia','africa','antarctic','attapady','auckland','agra','athens','assam','angkor']
+	B=['belgium','brussels','bulgaria','bali','bihar','beijing','brooklyn','barcelona','boston']
+	C=['canada','cairo','california','chennai','china','columbo','cordoba','canberra','cheranalloor','chandnichowk',]
+	D=['delhi','dhaka','daman','diu','dadra nagar haveli','dispur','dwarka','detroit','denmark','durham','darjeeling','doha','dubai','dublin']
+	E=['edapally','elamakkara','ellavakkadu','ethiopia','erode','england','egypt','ecuador','estonia','ernakulam','ettumanoor','erumeli']
+	F=['faizabad','furokh','france','frankfurt','florida',]
+	G=['gaya','germany','greece','ghana','grantham','gujarat','granada','gandhinagar']
+	H=['hyderabad','himachal pradesh','haryana','holand','haridwar','hong kong']
+	I=['india','indonesia','indianapolis','iraq','iran','italy','idukki','ireland','iceland']
+	J=['japan','jharkhand','jordan','jaipur','jaiselmer','jerusalem']
+	K=['kerala','kochi','kentucky','kyoto','kottayam','karnataka','kurikshetra','kenya','kazkahistan']
+	L=['london','ladakh','leh','long island','libya','ludhiana']
+	M=['manipur','meghalaya','maldives','mali','moscow','mumbai','maharashtra','macedonia','marwar','madhya pradesh','mongolia']
+	N=['nagaland','north korea','new york','niger','nigeria','niagra']
+	O=['oakland','orlando','odisha','osaka','oman','ottawa']
+	P=['panipat','palakkad','phillipines','portugal','poland','pakistan','patiala']
+	Q=['qatar','queensland','quebec',]
+	R=['rwanda','rome','romania','russia','reykjavik','rajasthan','rio de janiero','ranthambore','raipur','ranchi']
+	S=['spain','somalia','singapore','singapore city','sydney','shanghai','shimla','sentosa','south korea','srilanka','switzerland','saudi arabia','sharjah','san francisco']
+	T=['thalakaveri','thrissur','telanghana','turket','tamil nadu','tokyo','trivandrum','tanzania','tajikistan']
+	U=['uttar pradesh','uttarakhand','ukraine','uganda','usa','uae','uzbekistan']
+	W=['washington dc','wellington','wales','west indies','west hill','west bengal','wembli']
+	V=['vatican','varapuzha','venezuela','varkala']
+	X=['xenia','xiamen','xiang','xaladu']
+	Y=['york','yougoslavia','yellowstone','yorkshire','yemen']
+	Z=['zimbabwe','zambia','zurick']
+	
+	countriesAlreadyUsed = [] # a list of countries already said by the player
+	cpuCountry = "ATLAS" # the previous country mentioned, i.e for a game of atlas, the player gives a country that starts with the ending letter of the variable cpuCountry
+	places = [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+    
+	mistakes = 0
+	wins = 0
+
+
+	while True:
+		print(f"the computer says the place {cpuCountry}")
+		playerCountry = (input('enter place. remember that entering the wrong place 3 times counts as a loss. ===>  ')).upper()
+
+		if (playerCountry in countriesAlreadyUsed) or (cpuCountry[-1] != playerCountry[0]):
+			print("error")
+			mistakes += 1
+			if mistakes == 3:
+				print("you lose")
+				addScore(False)
+				break
+			continue
+		
+		else:
+			countriesAlreadyUsed.append(playerCountry)
+			#to not let places repeat
+
+			# now for the computer to pick a country...
+			lastLetterList = eval(playerCountry[-1]) # references the list of countries that has starting letter that is the ending letter of the country mentioned by player
+			cpuCountry = (lastLetterList.pop(random.randrange(len(lastLetterList)))).upper() # gives a random country from the list, and removes it from the list
+			countriesAlreadyUsed.append(cpuCountry)
+
+			wins += 1
+			if wins == 5:
+				print("you win")
+				addScore(True)
+				break
+
+
+"""TICTACTOE SAURAV KURIEN REJI"""
+"""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"""
+
+brd = [" " for x in range(9)] # creates an empty list of 9 blank elements, to be filled with X or O
+
+
+def printbrd(): # printing board
+	global brd
+	print("-----------------")
+	print("                 ")
+	print("   ▒   ▒")
+	print(" " + brd[0] + " ▒ " + brd[1] + " ▒" + brd[2])
+	print("   ▒   ▒")
+	print("▀▀▀▀▀▀▀▀▀▀▀")
+	print("   ▒   ▒")
+	print(" " + brd[3] + " ▒ " + brd[4] + " ▒" + brd[5])
+	print("   ▒   ▒")
+	print("▀▀▀▀▀▀▀▀▀▀▀")
+	print("   ▒   ▒")
+	print(" " + brd[6] + " ▒ " + brd[7] + " ▒" + brd[8])
+	print("   ▒   ▒")
+
+def wonGame(): # checks for all the win conditions "player", "CPU" , "Draw", None, depending on who wins, or if the board is full, or no one has won yet 
+	global brd
+
+	# horizontals
+	if brd[6] == "X" and brd[7] == "X" and brd[8] == "X":
+		return "player"
+	if brd[3] == "X" and brd[4] == "X" and brd[5] == "X":
+		return "player"
+	if brd[0] == "X" and brd[1] == "X" and brd[2] == "X":
+		return "player"
+	
+	# verticals
+	if brd[0] == "X" and brd[3] == "X" and brd[6] == "X":
+		return "player"
+	if brd[1] == "X" and brd[4] == "X" and brd[7] == "X":
+		return "player"
+	if brd[2] == "X" and brd[5] == "X" and brd[8] == "X":
+		return "player"
+	
+	# diagonals
+	if brd[0] == "X" and brd[4] == "X" and brd[8] == "X":
+		return "player"
+	if brd[2] == "X" and brd[4] == "X" and brd[6] == "X":
+		return "player"
+
+
+	# horizontals
+	if brd[6] == "O" and brd[7] == "O" and brd[8] == "O":
+		return "CPU"
+	if brd[3] == "O" and brd[4] == "O" and brd[5] == "O":
+		return "CPU"
+	if brd[0] == "O" and brd[1] == "O" and brd[2] == "O":
+		return "CPU"
+	
+	# verticals
+	if brd[0] == "O" and brd[3] == "O" and brd[6] == "O":
+		return "CPU"
+	if brd[1] == "O" and brd[4] == "O" and brd[7] == "O":
+		return "CPU"
+	if brd[2] == "O" and brd[5] == "O" and brd[8] == "O":
+		return "CPU"
+	
+	# diagonals
+	if brd[0] == "O" and brd[4] == "O" and brd[8] == "O":
+		return "CPU"
+	if brd[2] == "O" and brd[4] == "O" and brd[6] == "O":
+		return "CPU"
+
+	return ("draw" if " " not in brd else None) 
+
+def playerMove():
+    run = True
+    while run:
+        plrInput = int(input("Give the position(0-8): "))
+        if brd[plrInput] == " ": # checks if the slot mentioned by the player is blank, and leaves the while loop if true
+            run = False
+            break
+        else:
+            print("Try Again")
+    brd[plrInput] = "X"
+
+def cpuMove(): # here, the CPU picks a random empty element on the board, and places "0" there
+    run = True
+    cpuInput = random.choice([i for i in range(9) if brd[i] == " "]) 
+    brd[cpuInput] = "O"	
+
+def tictactoe():
+	printbrd()
+	while wonGame() == None: # while no one has won the game
+		playerMove()
+		printbrd()
+		
+		if wonGame() == None:
+			cpuMove()
+			printbrd()
+		
+		if wonGame() == "player":
+			addScore(True) # player wins
+		
+		if wonGame() == "CPU":
+			addScore(False) # cpu wins
+
+		if wonGame() == "draw":
+			addScore(None) # it is a draw
+
+
+"""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"""
+
+def main():
+	gameDatabase = ct.connect(host ='localhost',user = sqlUser,passwd = sqlPassword,charset ='utf8') # connecting to sql, and creating the cursor that allows us to use the database in the next line
+	cursor= gameDatabase.cursor()
+	
+	cursor.execute('CREATE DATABASE IF NOT EXISTS gameDatabase') # creating the database if it doesnt exist and opening it
+	cursor.execute('USE gameDatabase')
+	
+	cursor.execute('CREATE TABLE IF NOT EXISTS scoreboard (name varchar(50) PRIMARY KEY, wins Int, losses Int, draws Int)') # creating the table that has all the scores
+	gameDatabase.commit()
+
+	# in this try-except statement, we add the player name to the database with 0 wins, losses, or draws, if it hasnt been entered in the database before, 
+	# the try-except statement is used, to prevent error from coming due to adding a duplicate name.... 
+	try:
+		cursor.execute("INSERT INTO scoreboard(name, wins, losses, draws) VALUES('{}', {}, '{}', '{}')".format(playerName, 0, 0, 0))
+	except:
+		pass
+
+
+	# here, we add CPU to the table......
+	try:
+		cursor.execute("INSERT INTO scoreboard(name, wins, losses, draws) VALUES('{}', {}, '{}', '{}')".format("CPU", 0, 0, 0))# initializing the CPU into the leaderboard, for the first time
+	except:
+		pass
+
+
+	gameDatabase.commit()
+
+	while True: # the menu leadign to the different games, leaderboard, and exit
+		option = int(input("""
+
+			▂▃▅▇█▓▒░۩۞۩        ۩۞۩░▒▓█▇▅▃▂
+			
+                   𝖂𝖍𝖆𝖙 𝖜𝖔𝖚𝖑𝖉 𝖚 𝖑𝖎𝖐𝖊 𝖙𝖔 𝖕𝖑𝖆𝖞? 
+			
+			            𝕬𝖙𝖑𝖆𝖘(1)
+			
+			           𝕳𝖆𝖓𝖌𝖒𝖆𝖓(2)
+			
+			          𝕿𝖎𝖈𝕿𝖆𝖈𝕿𝖔𝖊(3)
+			
+			       𝕽𝖔𝖈𝖐𝕻𝖆𝖕𝖊𝖗𝕾𝖈𝖎𝖘𝖘𝖔𝖗𝖘(4)
+			
+			            𝖊𝖝𝖎𝖙(5)
+			
+			           𝕾𝖈𝖔𝖗𝖊𝖘(6)
+
+			▂▃▅▇█▓▒░۩۞۩        ۩۞۩░▒▓█▇▅▃▂"""))
+
+		if option == 1:
+			atlas()
+		if option == 2:
+			hangman()
+		if option == 3:
+			tictactoe()
+		if option == 4:
+			stonepaperscissors()
+		if option == 5:
+			break
+		if option == 6:
+			displayScores()
+
+
+def displayScores(): # this functions prints the results of the database i.e the scoreboard, in a neatly formatted way
+	
+	print("Name      Wins Losses Draws")
+	gameDatabase = ct.connect(host ='localhost',user = sqlUser,passwd = sqlPassword,charset ='utf8')
+	cursor= gameDatabase.cursor()
+	cursor.execute('USE gameDatabase')
+	cursor.execute("SELECT * FROM scoreboard ORDER BY wins DESC")
+	data = cursor.fetchall()
+
+	for row in data:
+		print("●▬▬▬▬๑۩۩๑▬▬▬▬▬●▬▬▬▬๑۩۩๑▬▬▬▬▬●▬▬▬▬๑۩۩๑▬▬▬▬▬●")
+		print(row[0],row[1], row[2])
+
+
+def addScore(victory): # this function adds scores to the scoreboard, depending on if the player has won or lost with the cpu
+	gameDatabase = ct.connect(host ='localhost',user = sqlUser,passwd = sqlPassword,charset ='utf8')
+	cursor= gameDatabase.cursor()
+	cursor.execute('USE gameDatabase')
+
+	if victory: # i.e if the player has won, the gets gets a loss, while the CPU gets a loss	
+		cursor.execute('UPDATE scoreboard SET wins = wins + 1 WHERE name = "{}"'.format(playerName))	
+		cursor.execute('UPDATE scoreboard SET losses = losses + 1 WHERE name = "{}"'.format("CPU"))
+	
+	if not victory: # i.e if the player has lost, the player gets a loss, while the CPU gets a win	
+		cursor.execute('UPDATE scoreboard SET wins = wins + 1 WHERE name = "{}"'.format("CPU"))		
+		cursor.execute('UPDATE scoreboard SET losses = losses + 1 WHERE name = "{}"'.format(playerName))
+	
+	if victory == None: # i.e if it's a draw, both player and cpu register a draw	
+		cursor.execute('UPDATE scoreboard SET draws = draws + 1 WHERE name = "{}"'.format("CPU"))		
+		cursor.execute('UPDATE scoreboard SET draws = draws + 1 WHERE name = "{}"'.format(playerName))	
+
+	gameDatabase.commit()
+
+main()
+
+
+
+
+
+
+
